@@ -1,0 +1,102 @@
+{% set emojis = {"Pasta":"🍝","Pizza":"🍕","Pizza Special":"🍕","Beef Burger":"🍔","Burgers":"🍔","Fries":"🍟","Side Order":"🍗","Calzone":"🥟","Beverages":"🥤","Dips":"🥫","Add-ons":"➕","Deals":"🎁"} %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menu — {{ restaurant_name }}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f5f6f8; color: #1d3557; padding-bottom: 90px; }
+  header { position: sticky; top: 0; background: #1d3557; color: #fff; padding: 14px 16px; display: flex; align-items: center; gap: 12px; z-index: 10; }
+  header a { color: #fff; text-decoration: none; font-size: 22px; }
+  header h1 { font-size: 20px; font-weight: 700; }
+  header span { font-size: 13px; opacity: .8; }
+  h2 { margin: 22px 16px 10px; font-size: 17px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; padding: 0 12px; }
+  .item { background: #fff; border-radius: 14px; padding: 12px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.08); position: relative; }
+  .item .thumb { font-size: 42px; line-height: 1; }
+  .item .thumb img { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; }
+  .item .name { font-weight: 600; font-size: 14px; margin-top: 8px; min-height: 34px; }
+  .item .price { font-weight: 700; font-size: 15px; color: #2a9d3f; margin: 4px 0 8px; }
+  .item .add { width: 100%; min-height: 44px; border: none; border-radius: 10px; background: #1d3557; color: #fff; font-size: 20px; font-weight: 700; cursor: pointer; }
+  .item .add:active { background: #e63946; }
+  .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 2px solid #eee; padding: 10px 14px; display: flex; align-items: center; gap: 12px; z-index: 20; }
+  .cart-info { flex: 1; }
+  .cart-info .count { font-size: 13px; color: #666; }
+  .cart-info .total { font-size: 20px; font-weight: 800; color: #1d3557; }
+  .order-btn { min-height: 52px; padding: 0 22px; border: none; border-radius: 12px; background: #25d366; color: #fff; font-size: 17px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+  .order-btn:disabled { background: #bbb; }
+  .empty { text-align: center; color: #888; padding: 40px 20px; font-size: 15px; }
+</style>
+</head>
+<body>
+<header>
+  <a href="/">&larr;</a>
+  <div><h1>Menu</h1><span>{{ restaurant_name }} &middot; order on WhatsApp</span></div>
+</header>
+
+{% if not courses %}
+  <div class="empty">Menu loading &hellip;</div>
+{% endif %}
+
+{% for course in courses %}
+  <h2>{{ course.name }}</h2>
+  <div class="grid">
+    {% for i in course.items %}
+    <div class="item" data-code="{{ i.item }}" data-name="{{ i.item_name }}" data-price="{{ i.rate }}">
+      <div class="thumb">
+        {% if i.image %}<img src="{{ i.image }}" alt="">{% else %}{{ emojis.get(course.name, "🍽️") }}{% endif %}
+      </div>
+      <div class="name">{{ i.item_name }}</div>
+      <div class="price">Rs {{ '{:,.0f}'.format(i.rate) }}</div>
+      <button class="add" onclick="add(this)">+ Add</button>
+    </div>
+    {% endfor %}
+  </div>
+{% endfor %}
+
+<div class="cart-bar">
+  <div class="cart-info">
+    <div class="count" id="count">0 items</div>
+    <div class="total" id="total">Rs 0</div>
+  </div>
+  <button class="order-btn" id="orderBtn" disabled onclick="order()">WhatsApp</button>
+</div>
+
+<script>
+var cart = {};
+var number = "{{ whatsapp_number }}";
+
+function add(btn) {
+  var el = btn.closest('.item');
+  var code = el.dataset.code, name = el.dataset.name, price = parseFloat(el.dataset.price);
+  if (!cart[code]) cart[code] = { name: name, price: price, qty: 0 };
+  cart[code].qty++;
+  render();
+}
+
+function render() {
+  var count = 0, total = 0;
+  for (var k in cart) { count += cart[k].qty; total += cart[k].qty * cart[k].price; }
+  document.getElementById('count').textContent = count + (count === 1 ? ' item' : ' items');
+  document.getElementById('total').textContent = 'Rs ' + total.toLocaleString('en-PK');
+  document.getElementById('orderBtn').disabled = count === 0;
+}
+
+function order() {
+  var lines = ['🍔 BunBites — New Order', '────────────────────'], total = 0;
+  for (var k in cart) {
+    var it = cart[k];
+    lines.push(it.qty + '× ' + it.name + '   Rs ' + (it.qty * it.price).toLocaleString('en-PK'));
+    total += it.qty * it.price;
+  }
+  lines.push('────────────────────');
+  lines.push('Total: Rs ' + total.toLocaleString('en-PK'));
+  lines.push('', 'Name:', 'Address:', 'Delivery / Pickup:');
+  var url = 'https://wa.me/' + number + '?text=' + encodeURIComponent(lines.join('\n'));
+  window.open(url, '_blank');
+}
+</script>
+</body>
+</html>
