@@ -43,13 +43,13 @@
 {% for course in courses %}
   <h2>{{ course.name }}</h2>
   <div class="grid">
-    {% for i in course.items %}
+    {% for i in course["items"] %}
     <div class="item" data-code="{{ i.item }}" data-name="{{ i.item_name }}" data-price="{{ i.rate }}">
       <div class="thumb">
         {% if i.image %}<img src="{{ i.image }}" alt="">{% else %}{{ emojis.get(course.name, "🍽️") }}{% endif %}
       </div>
       <div class="name">{{ i.item_name }}</div>
-      <div class="price">Rs {{ '{:,.0f}'.format(i.rate) }}</div>
+      <div class="price">Rs {{ i.rate }}</div>
       <button class="add" onclick="add(this)">+ Add</button>
     </div>
     {% endfor %}
