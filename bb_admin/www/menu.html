@@ -85,15 +85,23 @@ function render() {
 }
 
 function order() {
-  var lines = ['🍔 BunBites — New Order', '────────────────────'], total = 0;
+  var lines = ['*🍔 BUNBITES — NEW ORDER*', '📍 Wah Cantt · 0311-0177077', ''], total = 0;
+  lines.push('*Your order:*');
   for (var k in cart) {
     var it = cart[k];
-    lines.push(it.qty + '× ' + it.name + '   Rs ' + (it.qty * it.price).toLocaleString('en-PK'));
+    lines.push('• ' + it.qty + '× ' + it.name + ' — Rs ' + (it.qty * it.price).toLocaleString('en-PK'));
     total += it.qty * it.price;
   }
-  lines.push('────────────────────');
-  lines.push('Total: Rs ' + total.toLocaleString('en-PK'));
-  lines.push('', 'Name:', 'Address:', 'Delivery / Pickup:');
+  lines.push('');
+  lines.push('*TOTAL: Rs ' + total.toLocaleString('en-PK') + '*');
+  lines.push('');
+  lines.push('*Your details:*');
+  lines.push('👤 Name:');
+  lines.push('📞 Phone:');
+  lines.push('📍 Address:');
+  lines.push('🛵 Delivery or 🍽️ Pickup:');
+  lines.push('');
+  lines.push('_Please fill and send — we will confirm your order_');
   var url = 'https://wa.me/' + number + '?text=' + encodeURIComponent(lines.join('\n'));
   window.open(url, '_blank');
 }
